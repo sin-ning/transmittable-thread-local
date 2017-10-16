@@ -221,6 +221,10 @@ public class TransmittableThreadLocal<T> extends InheritableThreadLocal<T> {
         }
     }
 
+    public interface Action<V, E extends Throwable> {
+        V act() throws E;
+    }
+
     public static Capture capture() {
         return new Capture(false);
     }
@@ -229,7 +233,7 @@ public class TransmittableThreadLocal<T> extends InheritableThreadLocal<T> {
         return new Capture(releaseTtlValueReferenceAfterRun);
     }
 
-    public static <V> V restoreAndRun(Capture capture, Callable<V> callable) throws Exception {
+    public static <V, E extends Throwable> V restoreAndRun(Capture capture, Action<V, E> action) throws E {
         Map<TransmittableThreadLocal<?>, Object> copied = capture.copiedRef.get();
         if (copied == null || capture.releaseTtlValueReferenceAfterRun && !capture.copiedRef.compareAndSet(copied, null)) {
             throw new IllegalStateException("TTL value reference is released after call!");
@@ -237,21 +241,7 @@ public class TransmittableThreadLocal<T> extends InheritableThreadLocal<T> {
 
         Map<TransmittableThreadLocal<?>, Object> backup = TransmittableThreadLocal.backupAndSetToCopied(copied);
         try {
-            return callable.call();
-        } finally {
-            TransmittableThreadLocal.restoreBackup(backup);
-        }
-    }
-
-    public static void restoreAndRun(Capture capture, Runnable runnable) {
-        Map<TransmittableThreadLocal<?>, Object> copied = capture.copiedRef.get();
-        if (copied == null || capture.releaseTtlValueReferenceAfterRun && !capture.copiedRef.compareAndSet(copied, null)) {
-            throw new IllegalStateException("TTL value reference is released after run!");
-        }
-
-        Map<TransmittableThreadLocal<?>, Object> backup = TransmittableThreadLocal.backupAndSetToCopied(copied);
-        try {
-            runnable.run();
+            return action.act();
         } finally {
             TransmittableThreadLocal.restoreBackup(backup);
         }
