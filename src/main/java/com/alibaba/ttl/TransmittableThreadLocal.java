@@ -128,7 +128,7 @@ public class TransmittableThreadLocal<T> extends InheritableThreadLocal<T> {
         return copy;
     }
 
-    static Map<TransmittableThreadLocal<?>, Object> backupAndSetToCopied(Map<TransmittableThreadLocal<?>, Object> copied) {
+    public static Map<TransmittableThreadLocal<?>, Object> backupAndSetToCopied(Map<TransmittableThreadLocal<?>, Object> copied) {
         Map<TransmittableThreadLocal<?>, Object> backup = new HashMap<>();
 
         for (Iterator<? extends Map.Entry<TransmittableThreadLocal<?>, ?>> iterator = holder.get().entrySet().iterator();
@@ -160,7 +160,7 @@ public class TransmittableThreadLocal<T> extends InheritableThreadLocal<T> {
         return backup;
     }
 
-    static void restoreBackup(Map<TransmittableThreadLocal<?>, Object> backup) {
+    public static void restoreBackup(Map<TransmittableThreadLocal<?>, Object> backup) {
         // call afterExecute callback
         doExecuteCallback(false);
 
