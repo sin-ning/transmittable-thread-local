@@ -36,12 +36,7 @@ public final class TtlCallable<V> implements Callable<V> {
      */
     @Override
     public V call() throws Exception {
-        return TransmittableThreadLocal.restoreAndRun(capture, new TransmittableThreadLocal.Action<V, Exception>() {
-            @Override
-            public V act() throws Exception {
-                return callable.call();
-            }
-        });
+        return TransmittableThreadLocal.restoreAndRun(capture, callable::call);
     }
 
     public Callable<V> getCallable() {
@@ -50,8 +45,12 @@ public final class TtlCallable<V> implements Callable<V> {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
 
         TtlCallable<?> that = (TtlCallable<?>) o;
 

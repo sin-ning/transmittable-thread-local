@@ -33,12 +33,9 @@ public final class TtlRunnable implements Runnable {
      */
     @Override
     public void run() {
-        TransmittableThreadLocal.restoreAndRun(capture, new TransmittableThreadLocal.Action<Void, RuntimeException>() {
-            @Override
-            public Void act() throws RuntimeException {
-                runnable.run();
-                return null;
-            }
+        TransmittableThreadLocal.restoreAndRun(capture, (TransmittableThreadLocal.Action<Void, RuntimeException>) () -> {
+            runnable.run();
+            return null;
         });
     }
 
@@ -51,8 +48,12 @@ public final class TtlRunnable implements Runnable {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
 
         TtlRunnable that = (TtlRunnable) o;
 

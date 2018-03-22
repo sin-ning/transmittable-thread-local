@@ -6,7 +6,6 @@ import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -76,7 +75,8 @@ public class TransmittableThreadLocal<T> extends InheritableThreadLocal<T> {
     @Override
     public final void set(T value) {
         super.set(value);
-        if (null == value) { // may set null to remove value
+        // may set null to remove value
+        if (null == value) {
             removeValue();
         } else {
             addValue();
@@ -208,7 +208,7 @@ public class TransmittableThreadLocal<T> extends InheritableThreadLocal<T> {
         private final boolean releaseTtlValueReferenceAfterRun;
 
         private Capture(boolean releaseTtlValueReferenceAfterRun) {
-            this.copiedRef = new AtomicReference<Map<TransmittableThreadLocal<?>, Object>>(TransmittableThreadLocal.copy());
+            this.copiedRef = new AtomicReference<>(TransmittableThreadLocal.copy());
             this.releaseTtlValueReferenceAfterRun = releaseTtlValueReferenceAfterRun;
         }
 

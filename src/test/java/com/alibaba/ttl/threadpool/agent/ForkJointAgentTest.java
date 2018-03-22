@@ -1,11 +1,8 @@
 package com.alibaba.ttl.threadpool.agent;
 
 import com.alibaba.ttl.TransmittableThreadLocal;
-import com.alibaba.ttl.Utils;
 import org.junit.Assert;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -29,22 +26,19 @@ public class ForkJointAgentTest {
 
     static final AtomicLong tagCounter = new AtomicLong();
 
-    StringWriter stringWriter = new StringWriter();
-    PrintWriter printWriter = new PrintWriter(stringWriter);
-
     static {
         expandThreadPool(pool);
     }
 
-    public static void afterClass() throws Exception {
+    public static void afterClass() {
         pool.shutdown();
     }
 
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) {
         task();
     }
 
-    public static void task() throws Exception {
+    public static void task() {
         final ConcurrentMap<String, TransmittableThreadLocal<String>> ttlInstances = createTestTtlValue();
 
         long[] numbers = LongStream.rangeClosed(1, 100).toArray();
@@ -52,7 +46,7 @@ public class ForkJointAgentTest {
         assertEquals(5050L, result.longValue());
 
         // create after new Task, won't see parent value in in task!
-        TransmittableThreadLocal<String> after = new TransmittableThreadLocal<String>();
+        TransmittableThreadLocal<String> after = new TransmittableThreadLocal<>();
         after.set(PARENT_AFTER_CREATE_TTL_TASK);
         ttlInstances.put(PARENT_AFTER_CREATE_TTL_TASK, after);
 
@@ -90,7 +84,7 @@ class SumTask extends RecursiveTask<Long> {
     private final int from;
     private final int to;
 
-    public final String tag;
+    private final String tag;
     private final ConcurrentMap<String, TransmittableThreadLocal<String>> ttlInstances;
 
     SumTask(long[] numbers, ConcurrentMap<String, TransmittableThreadLocal<String>> ttlInstances) {
@@ -110,7 +104,7 @@ class SumTask extends RecursiveTask<Long> {
     protected Long compute() {
         // 1. Add new
         String newChildKey = CHILD + tag;
-        TransmittableThreadLocal<String> child = new TransmittableThreadLocal<String>();
+        TransmittableThreadLocal<String> child = new TransmittableThreadLocal<>();
         child.set(newChildKey);
 
         TransmittableThreadLocal<String> old = ttlInstances.putIfAbsent(newChildKey, child);
@@ -123,7 +117,7 @@ class SumTask extends RecursiveTask<Long> {
         String p = PARENT_MODIFIED_IN_CHILD + tag;
         ttlInstances.get(PARENT_MODIFIED_IN_CHILD).set(p);
 
-        ForkJointAgentTest.tag2copied.put(tag, Utils.copied(ttlInstances));
+        ForkJointAgentTest.tag2copied.put(tag, copied(ttlInstances));
 
         // ========================================================================
 
