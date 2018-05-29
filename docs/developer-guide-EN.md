@@ -1,6 +1,6 @@
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
-**Table of Contents**  *generated with [DocToc](https://github.com/thlorenz/doctoc)*
+
 
 - [Capture, replay and restore](#capture-replay-and-restore)
 
@@ -8,29 +8,36 @@
 
 # Capture, replay and restore
 
-By using [`com.alibaba.ttl.TransmittableThreadLocal.Transmitter`](src/main/java/com/alibaba/ttl/TransmittableThreadLocal.java)to capture all `TransmittableThreadLocal` of current thread and replay them in any other thread，there are following methods：
+[`TransmittableThreadLocal.Transmitter`](../main/java/com/alibaba/ttl/TransmittableThreadLocal.java#L201) to capture all `TransmittableThreadLocal` of current thread and replay them in any other thread，there are following methods：
 
-- `capture`: captures all `TransmittableThreadLocal` values in current thread
-- `replay`: replays the captured TTL values after backup the current ones
-- `restore`: restores current thread to state before replay
+- `capture`: capture all `TTL` values in current thread
+- `replay`: replay the captured `TTL` values in current thread, and return the backup `TTL` values before replay
+- `restore`: restore `TTL` values before replay
 
 Sample code：
 
 ```java
-ExecutorService executorService = ...
+// ===========================================================================
+// Thread A
+// ===========================================================================
 
 TransmittableThreadLocal<String> parent = new TransmittableThreadLocal<String>();
 parent.set("value-set-in-parent");
 
-//capture in current thread
+// capture all TTL values in current thread
 final Object captured = TransmittableThreadLocal.Transmitter.capture();
-executorService.submit(() -> {
-    final Object backup = TransmittableThreadLocal.Transmitter.replay(captured);
-    try {
-        // Your biz code, you can get the TransmittableThreadLocal value from here
-        String value = parent.get();
-    } finally {
-        TransmittableThreadLocal.Transmitter.restore(backup);
-    }
-});
+
+// ===========================================================================
+// Thread B
+// ===========================================================================
+
+// replay the captured TTL values in current thread, and return the backup TTL values before replay
+final Object backup = TransmittableThreadLocal.Transmitter.replay(captured);
+try {
+    // Your biz code, you can get the TransmittableThreadLocal value from here
+    String value = parent.get();
+} finally {
+    // restore TTL values before replay
+    TransmittableThreadLocal.Transmitter.restore(backup);
+}
 ```
